@@ -1,0 +1,6 @@
+{
+  "name": "সবুজ খামার ব্যবস্থাপনা",
+  "description": "পশুর তালিকা, খাবারের স্টক, আয়-ব্যয়ের হিসাব এবং বিক্রয় তথ্য সংরক্ষণের জন্য ক্লাউড-ভিত্তিক আধুনিক খামার ব্যবস্থাপনা ওয়েব অ্যাপ্লিকেশন।",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

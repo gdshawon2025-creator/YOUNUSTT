@@ -1,0 +1,519 @@
+{
+  "entities": {
+    "FarmProfile": {
+      "title": "FarmProfile",
+      "description": "Configuration, owner profile, and cloud security lock hash for a user's farm.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "description": "Authenticated Firebase UID of the farm owner.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "farmName": {
+          "type": "string",
+          "description": "Display name of the farm.",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "ownerName": {
+          "type": "string",
+          "description": "Name of the farm owner or manager.",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "location": {
+          "type": "string",
+          "description": "Address or village/district of the farm.",
+          "minLength": 0,
+          "maxLength": 200
+        },
+        "phone": {
+          "type": "string",
+          "description": "Contact phone number of the farm.",
+          "minLength": 0,
+          "maxLength": 30
+        },
+        "currency": {
+          "type": "string",
+          "description": "Currency symbol or code used across reports.",
+          "minLength": 1,
+          "maxLength": 10
+        },
+        "hasAppPassword": {
+          "type": "boolean",
+          "description": "Mandatory flag indicating active admin panel password protection."
+        },
+        "appPasswordHash": {
+          "type": "string",
+          "description": "SHA-256 hex digest of salted admin access password.",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "appPasswordSalt": {
+          "type": "string",
+          "description": "Random hex salt used for admin access password hashing.",
+          "minLength": 16,
+          "maxLength": 64
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of profile creation."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of latest profile update."
+        }
+      },
+      "required": [
+        "ownerId",
+        "farmName",
+        "ownerName",
+        "location",
+        "phone",
+        "currency",
+        "hasAppPassword",
+        "appPasswordHash",
+        "appPasswordSalt",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Animal": {
+      "title": "Animal",
+      "description": "Individual livestock or poultry batch entry in the farm herd list.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "description": "Authenticated Firebase UID of the farm owner.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name or batch label of the animal.",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "tagNumber": {
+          "type": "string",
+          "description": "Ear tag or farm identification code.",
+          "minLength": 1,
+          "maxLength": 50
+        },
+        "species": {
+          "type": "string",
+          "description": "Species category of the animal.",
+          "enum": ["গরু", "ছাগল", "ভেড়া", "মহিষ", "হাঁস", "মুরগি", "অন্যান্য"],
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "breed": {
+          "type": "string",
+          "description": "Breed of the animal.",
+          "minLength": 0,
+          "maxLength": 80
+        },
+        "gender": {
+          "type": "string",
+          "description": "Sex or age group classification.",
+          "enum": ["পুরুষ (ষাঁড়/পাঠা)", "স্ত্রী (গাভী/ছাগী)", "বাচ্চা"],
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "ageMonths": {
+          "type": "number",
+          "description": "Age of the animal in months."
+        },
+        "weightKg": {
+          "type": "number",
+          "description": "Current estimated weight in kilograms."
+        },
+        "purchasePrice": {
+          "type": "number",
+          "description": "Acquisition cost or valuation in BDT."
+        },
+        "healthCondition": {
+          "type": "string",
+          "description": "Current health and veterinary care status.",
+          "enum": ["সুস্থ", "চিকিৎসাধীন", "গর্ভবতী", "পর্যবেক্ষণে"],
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "notes": {
+          "type": "string",
+          "description": "Additional care, vaccination, or lineage notes.",
+          "minLength": 0,
+          "maxLength": 500
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of creation."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of last modification."
+        }
+      },
+      "required": [
+        "ownerId",
+        "name",
+        "tagNumber",
+        "species",
+        "breed",
+        "gender",
+        "ageMonths",
+        "weightKg",
+        "purchasePrice",
+        "healthCondition",
+        "notes",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "FeedStock": {
+      "title": "FeedStock",
+      "description": "Feed, fodder, or supplement inventory item.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "description": "Authenticated Firebase UID of the farm owner.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the feed or supplement.",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "category": {
+          "type": "string",
+          "description": "Feed classification category.",
+          "enum": ["দানাদার খাদ্য", "ভুষি ও খৈল", "কাঁচা ঘাস ও খড়", "ভিটামিন ও ওষুধ", "অন্যান্য"],
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "currentStock": {
+          "type": "number",
+          "description": "Available quantity in stock."
+        },
+        "unit": {
+          "type": "string",
+          "description": "Measurement unit for stock.",
+          "enum": ["কেজি", "বস্তা", "লিটার", "আঁটি", "প্যাকেট"],
+          "minLength": 1,
+          "maxLength": 30
+        },
+        "minStockAlert": {
+          "type": "number",
+          "description": "Minimum threshold below which low-stock alert triggers."
+        },
+        "unitCost": {
+          "type": "number",
+          "description": "Cost per unit in BDT."
+        },
+        "lastRestockedDate": {
+          "type": "string",
+          "description": "ISO date (YYYY-MM-DD) of latest restock.",
+          "minLength": 10,
+          "maxLength": 10,
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Supplier or storage remarks.",
+          "minLength": 0,
+          "maxLength": 500
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of creation."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of last modification."
+        }
+      },
+      "required": [
+        "ownerId",
+        "name",
+        "category",
+        "currentStock",
+        "unit",
+        "minStockAlert",
+        "unitCost",
+        "lastRestockedDate",
+        "notes",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "Income or expense ledger entry for farm accounting.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "description": "Authenticated Firebase UID of the farm owner.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "type": {
+          "type": "string",
+          "description": "Ledger direction: income or expense.",
+          "enum": ["income", "expense"],
+          "minLength": 6,
+          "maxLength": 7
+        },
+        "title": {
+          "type": "string",
+          "description": "Short summary of the income or expense.",
+          "minLength": 1,
+          "maxLength": 140
+        },
+        "category": {
+          "type": "string",
+          "description": "Accounting category label.",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "amount": {
+          "type": "number",
+          "description": "Monetary value in BDT."
+        },
+        "transactionDate": {
+          "type": "string",
+          "description": "ISO date (YYYY-MM-DD) of the transaction.",
+          "minLength": 10,
+          "maxLength": 10,
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "paymentMethod": {
+          "type": "string",
+          "description": "Settlement channel.",
+          "enum": ["নগদ", "বিকাশ / নগদ অ্যাপ", "ব্যাংক ট্রান্সফার", "বাকি"],
+          "minLength": 1,
+          "maxLength": 50
+        },
+        "notes": {
+          "type": "string",
+          "description": "Optional voucher or reference remarks.",
+          "minLength": 0,
+          "maxLength": 500
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of creation."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of last modification."
+        }
+      },
+      "required": [
+        "ownerId",
+        "type",
+        "title",
+        "category",
+        "amount",
+        "transactionDate",
+        "paymentMethod",
+        "notes",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "SaleRecord": {
+      "title": "SaleRecord",
+      "description": "Commercial sale record for livestock, milk, eggs, meat, or fertilizer.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "description": "Authenticated Firebase UID of the farm owner.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "productType": {
+          "type": "string",
+          "description": "Category of farm product sold.",
+          "enum": ["পশু বিক্রয়", "দুধ বিক্রয়", "ডিম বিক্রয়", "মাংস বিক্রয়", "জৈব সার", "অন্যান্য"],
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "itemName": {
+          "type": "string",
+          "description": "Specific animal or product description.",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "referenceTag": {
+          "type": "string",
+          "description": "Optional animal tag or invoice code.",
+          "minLength": 0,
+          "maxLength": 50
+        },
+        "quantity": {
+          "type": "number",
+          "description": "Quantity sold."
+        },
+        "unit": {
+          "type": "string",
+          "description": "Unit of sale.",
+          "enum": ["টি", "লিটার", "কেজি", "হালি", "বস্তা"],
+          "minLength": 1,
+          "maxLength": 30
+        },
+        "unitPrice": {
+          "type": "number",
+          "description": "Selling price per unit in BDT."
+        },
+        "totalAmount": {
+          "type": "number",
+          "description": "Total invoice value in BDT."
+        },
+        "paidAmount": {
+          "type": "number",
+          "description": "Amount received so far in BDT."
+        },
+        "dueAmount": {
+          "type": "number",
+          "description": "Remaining balance receivable in BDT."
+        },
+        "buyerName": {
+          "type": "string",
+          "description": "Name of customer or buyer.",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "buyerPhone": {
+          "type": "string",
+          "description": "Phone number of buyer.",
+          "minLength": 0,
+          "maxLength": 30
+        },
+        "saleDate": {
+          "type": "string",
+          "description": "ISO date (YYYY-MM-DD) of sale.",
+          "minLength": 10,
+          "maxLength": 10,
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Delivery or payment remarks.",
+          "minLength": 0,
+          "maxLength": 500
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of creation."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of last modification."
+        }
+      },
+      "required": [
+        "ownerId",
+        "productType",
+        "itemName",
+        "referenceTag",
+        "quantity",
+        "unit",
+        "unitPrice",
+        "totalAmount",
+        "paidAmount",
+        "dueAmount",
+        "buyerName",
+        "buyerPhone",
+        "saleDate",
+        "notes",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "AdminRecord": {
+      "title": "AdminRecord",
+      "description": "Trusted administrator registry document granting administrative override privileges.",
+      "type": "object",
+      "properties": {
+        "adminUid": {
+          "type": "string",
+          "description": "Authenticated Firebase UID of the administrator.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "roleLabel": {
+          "type": "string",
+          "description": "Administrative role title.",
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of creation."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of latest modification."
+        }
+      },
+      "required": [
+        "adminUid",
+        "roleLabel",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/admins/{adminId}": {
+      "schema": "AdminRecord",
+      "description": "Trusted admin registry managed exclusively by verified bootstrapped or existing admins."
+    },
+    "/farmProfiles/{userId}": {
+      "schema": "FarmProfile",
+      "description": "Owner-isolated farm settings, contact info (PII), and mandatory admin panel password digest."
+    },
+    "/animals/{animalId}": {
+      "schema": "Animal",
+      "description": "Livestock herd records owned by individual farm users."
+    },
+    "/feedStocks/{feedId}": {
+      "schema": "FeedStock",
+      "description": "Feed and fodder stock inventory owned by individual farm users."
+    },
+    "/transactions/{transactionId}": {
+      "schema": "Transaction",
+      "description": "Income and expense financial ledger records owned by individual farm users."
+    },
+    "/sales/{saleId}": {
+      "schema": "SaleRecord",
+      "description": "Sales invoices and buyer payment tracking owned by individual farm users."
+    }
+  }
+}

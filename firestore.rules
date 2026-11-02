@@ -1,0 +1,400 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Global Safety Net (Default Deny Catch-All)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 2. Hardened Global Primitives
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return request.auth != null && request.auth.token.email_verified == true;
+    }
+
+    // Bootstrapped runtime admin email (strictly verified) or trusted /admins/{uid} document
+    function isAdmin() {
+      return isVerifiedUser() && (
+        request.auth.token.email == 'gdyounus2025@gmail.com' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function hasFarmProfile(uid) {
+      return exists(/databases/$(database)/documents/farmProfiles/$(uid));
+    }
+
+    function isIsoDate(val) {
+      return val is string && val.size() == 10 && val.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+    }
+
+    // 3. Entity Validation Blueprints (Synchronized verbatim with firebase-blueprint.json)
+
+    function isValidAdminRecord(data) {
+      let keys = ['adminUid', 'roleLabel', 'createdAt', 'updatedAt'];
+      return data.keys().hasAll(keys) &&
+        data.keys().hasOnly(keys) &&
+        isValidId(data.adminUid) &&
+        data.roleLabel is string && data.roleLabel.size() >= 1 && data.roleLabel.size() <= 60 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidFarmProfile(data) {
+      let keys = [
+        'ownerId', 'farmName', 'ownerName', 'location', 'phone', 'currency',
+        'hasAppPassword', 'appPasswordHash', 'appPasswordSalt', 'createdAt', 'updatedAt'
+      ];
+      return data.keys().hasAll(keys) &&
+        data.keys().hasOnly(keys) &&
+        isValidId(data.ownerId) &&
+        data.ownerId == request.auth.uid &&
+        data.farmName is string && data.farmName.size() >= 1 && data.farmName.size() <= 120 &&
+        data.ownerName is string && data.ownerName.size() >= 1 && data.ownerName.size() <= 100 &&
+        data.location is string && data.location.size() <= 200 &&
+        data.phone is string && data.phone.size() <= 30 &&
+        data.currency is string && data.currency.size() >= 1 && data.currency.size() <= 10 &&
+        data.hasAppPassword is bool && data.hasAppPassword == true &&
+        data.appPasswordHash is string && data.appPasswordHash.size() == 64 &&
+        data.appPasswordSalt is string && data.appPasswordSalt.size() >= 16 && data.appPasswordSalt.size() <= 64 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidAnimal(data) {
+      let keys = [
+        'ownerId', 'name', 'tagNumber', 'species', 'breed', 'gender',
+        'ageMonths', 'weightKg', 'purchasePrice', 'healthCondition', 'notes', 'createdAt', 'updatedAt'
+      ];
+      return data.keys().hasAll(keys) &&
+        data.keys().hasOnly(keys) &&
+        isValidId(data.ownerId) &&
+        data.ownerId == request.auth.uid &&
+        data.name is string && data.name.size() >= 1 && data.name.size() <= 100 &&
+        data.tagNumber is string && data.tagNumber.size() >= 1 && data.tagNumber.size() <= 50 &&
+        data.species is string && data.species.size() >= 1 && data.species.size() <= 40 &&
+        data.species in ['গরু', 'ছাগল', 'ভেড়া', 'মহিষ', 'হাঁস', 'মুরগি', 'অন্যান্য'] &&
+        data.breed is string && data.breed.size() <= 80 &&
+        data.gender is string && data.gender.size() >= 1 && data.gender.size() <= 40 &&
+        data.gender in ['পুরুষ (ষাঁড়/পাঠা)', 'স্ত্রী (গাভী/ছাগী)', 'বাচ্চা'] &&
+        data.ageMonths is number && data.ageMonths >= 0 && data.ageMonths <= 600 &&
+        data.weightKg is number && data.weightKg >= 0 && data.weightKg <= 5000 &&
+        data.purchasePrice is number && data.purchasePrice >= 0 && data.purchasePrice <= 100000000 &&
+        data.healthCondition is string && data.healthCondition.size() >= 1 && data.healthCondition.size() <= 40 &&
+        data.healthCondition in ['সুস্থ', 'চিকিৎসাধীন', 'গর্ভবতী', 'পর্যবেক্ষণে'] &&
+        data.notes is string && data.notes.size() <= 500 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidFeedStock(data) {
+      let keys = [
+        'ownerId', 'name', 'category', 'currentStock', 'unit',
+        'minStockAlert', 'unitCost', 'lastRestockedDate', 'notes', 'createdAt', 'updatedAt'
+      ];
+      return data.keys().hasAll(keys) &&
+        data.keys().hasOnly(keys) &&
+        isValidId(data.ownerId) &&
+        data.ownerId == request.auth.uid &&
+        data.name is string && data.name.size() >= 1 && data.name.size() <= 100 &&
+        data.category is string && data.category.size() >= 1 && data.category.size() <= 60 &&
+        data.category in ['দানাদার খাদ্য', 'ভুষি ও খৈল', 'কাঁচা ঘাস ও খড়', 'ভিটামিন ও ওষুধ', 'অন্যান্য'] &&
+        data.currentStock is number && data.currentStock >= 0 && data.currentStock <= 10000000 &&
+        data.unit is string && data.unit.size() >= 1 && data.unit.size() <= 30 &&
+        data.unit in ['কেজি', 'বস্তা', 'লিটার', 'আঁটি', 'প্যাকেট'] &&
+        data.minStockAlert is number && data.minStockAlert >= 0 && data.minStockAlert <= 10000000 &&
+        data.unitCost is number && data.unitCost >= 0 && data.unitCost <= 100000000 &&
+        isIsoDate(data.lastRestockedDate) &&
+        data.notes is string && data.notes.size() <= 500 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidTransaction(data) {
+      let keys = [
+        'ownerId', 'type', 'title', 'category', 'amount',
+        'transactionDate', 'paymentMethod', 'notes', 'createdAt', 'updatedAt'
+      ];
+      return data.keys().hasAll(keys) &&
+        data.keys().hasOnly(keys) &&
+        isValidId(data.ownerId) &&
+        data.ownerId == request.auth.uid &&
+        data.type is string && data.type.size() >= 6 && data.type.size() <= 7 &&
+        data.type in ['income', 'expense'] &&
+        data.title is string && data.title.size() >= 1 && data.title.size() <= 140 &&
+        data.category is string && data.category.size() >= 1 && data.category.size() <= 80 &&
+        data.amount is number && data.amount > 0 && data.amount <= 1000000000 &&
+        isIsoDate(data.transactionDate) &&
+        data.paymentMethod is string && data.paymentMethod.size() >= 1 && data.paymentMethod.size() <= 50 &&
+        data.paymentMethod in ['নগদ', 'বিকাশ / নগদ অ্যাপ', 'ব্যাংক ট্রান্সফার', 'বাকি'] &&
+        data.notes is string && data.notes.size() <= 500 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidSaleRecord(data) {
+      let keys = [
+        'ownerId', 'productType', 'itemName', 'referenceTag', 'quantity', 'unit',
+        'unitPrice', 'totalAmount', 'paidAmount', 'dueAmount', 'buyerName', 'buyerPhone',
+        'saleDate', 'notes', 'createdAt', 'updatedAt'
+      ];
+      return data.keys().hasAll(keys) &&
+        data.keys().hasOnly(keys) &&
+        isValidId(data.ownerId) &&
+        data.ownerId == request.auth.uid &&
+        data.productType is string && data.productType.size() >= 1 && data.productType.size() <= 60 &&
+        data.productType in ['পশু বিক্রয়', 'দুধ বিক্রয়', 'ডিম বিক্রয়', 'মাংস বিক্রয়', 'জৈব সার', 'অন্যান্য'] &&
+        data.itemName is string && data.itemName.size() >= 1 && data.itemName.size() <= 120 &&
+        data.referenceTag is string && data.referenceTag.size() <= 50 &&
+        data.quantity is number && data.quantity > 0 && data.quantity <= 1000000 &&
+        data.unit is string && data.unit.size() >= 1 && data.unit.size() <= 30 &&
+        data.unit in ['টি', 'লিটার', 'কেজি', 'হালি', 'বস্তা'] &&
+        data.unitPrice is number && data.unitPrice >= 0 && data.unitPrice <= 1000000000 &&
+        data.totalAmount is number && data.totalAmount >= 0 && data.totalAmount <= 1000000000 &&
+        data.paidAmount is number && data.paidAmount >= 0 && data.paidAmount <= data.totalAmount &&
+        data.dueAmount is number && data.dueAmount >= 0 && data.dueAmount <= data.totalAmount &&
+        data.buyerName is string && data.buyerName.size() >= 1 && data.buyerName.size() <= 100 &&
+        data.buyerPhone is string && data.buyerPhone.size() <= 30 &&
+        isIsoDate(data.saleDate) &&
+        data.notes is string && data.notes.size() <= 500 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    // 4. Collection Rules
+
+    // Trusted Admin Registry (Strict Zero Self-Assignment, Zero List Scraping)
+    match /admins/{adminId} {
+      allow get: if isSignedIn() && isValidId(adminId) && (request.auth.uid == adminId || isAdmin());
+      allow list: if false;
+
+      allow create: if isVerifiedUser() &&
+        isValidId(adminId) &&
+        isValidAdminRecord(incoming()) &&
+        incoming().adminUid == adminId &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time &&
+        isAdmin();
+
+      allow update: if (
+        isVerifiedUser() &&
+        isValidId(adminId) &&
+        isValidAdminRecord(incoming()) &&
+        incoming().adminUid == existing().adminUid &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        isAdmin() &&
+        incoming().diff(existing()).affectedKeys().hasOnly(['roleLabel', 'updatedAt'])
+      );
+
+      allow delete: if isVerifiedUser() && isValidId(adminId) && isAdmin();
+    }
+
+    // PII-Isolated Farm Profile (Strict Owner-Only Get, Zero List Enumeration)
+    match /farmProfiles/{userId} {
+      allow get: if isSignedIn() && isValidId(userId) && request.auth.uid == userId;
+      allow list: if false;
+
+      allow create: if isVerifiedUser() &&
+        isValidId(userId) &&
+        request.auth.uid == userId &&
+        isValidFarmProfile(incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time;
+
+      allow update: if (
+        isVerifiedUser() &&
+        isValidId(userId) &&
+        request.auth.uid == userId &&
+        isValidFarmProfile(incoming()) &&
+        existing().ownerId == request.auth.uid &&
+        incoming().ownerId == existing().ownerId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        (
+          isAdmin() ||
+          // Action: Update Farm Profile Information
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'farmName', 'ownerName', 'location', 'phone', 'currency', 'updatedAt'
+          ]) ||
+          // Action: Update Mandatory Admin Password Hash & Salt
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'hasAppPassword', 'appPasswordHash', 'appPasswordSalt', 'updatedAt'
+          ]) ||
+          // Action: Migrate Legacy Unprotected Profile to Mandatory Password + Info
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'farmName', 'ownerName', 'location', 'phone', 'currency',
+            'hasAppPassword', 'appPasswordHash', 'appPasswordSalt', 'updatedAt'
+          ])
+        )
+      );
+
+      allow delete: if isVerifiedUser() && isValidId(userId) && request.auth.uid == userId && existing().ownerId == request.auth.uid;
+    }
+
+    // Livestock Herd Collection
+    match /animals/{animalId} {
+      allow get: if isSignedIn() && isValidId(animalId) && existing().ownerId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+
+      allow create: if isVerifiedUser() &&
+        isValidId(animalId) &&
+        isValidAnimal(incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time &&
+        hasFarmProfile(request.auth.uid);
+
+      allow update: if (
+        isVerifiedUser() &&
+        isValidId(animalId) &&
+        isValidAnimal(incoming()) &&
+        existing().ownerId == request.auth.uid &&
+        incoming().ownerId == existing().ownerId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        (
+          isAdmin() ||
+          // Action: Quick Health & Weight Update
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'healthCondition', 'weightKg', 'notes', 'updatedAt'
+          ]) ||
+          // Action: Full Animal Record Edit
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'name', 'tagNumber', 'species', 'breed', 'gender',
+            'ageMonths', 'weightKg', 'purchasePrice', 'healthCondition', 'notes', 'updatedAt'
+          ])
+        )
+      );
+
+      allow delete: if isVerifiedUser() && isValidId(animalId) && existing().ownerId == request.auth.uid;
+    }
+
+    // Feed Stock Collection
+    match /feedStocks/{feedId} {
+      allow get: if isSignedIn() && isValidId(feedId) && existing().ownerId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+
+      allow create: if isVerifiedUser() &&
+        isValidId(feedId) &&
+        isValidFeedStock(incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time &&
+        hasFarmProfile(request.auth.uid);
+
+      allow update: if (
+        isVerifiedUser() &&
+        isValidId(feedId) &&
+        isValidFeedStock(incoming()) &&
+        existing().ownerId == request.auth.uid &&
+        incoming().ownerId == existing().ownerId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        (
+          isAdmin() ||
+          // Action: Quick Stock Restock / Consumption Adjustment
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'currentStock', 'lastRestockedDate', 'notes', 'updatedAt'
+          ]) ||
+          // Action: Full Feed Item Edit
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'name', 'category', 'currentStock', 'unit',
+            'minStockAlert', 'unitCost', 'lastRestockedDate', 'notes', 'updatedAt'
+          ])
+        )
+      );
+
+      allow delete: if isVerifiedUser() && isValidId(feedId) && existing().ownerId == request.auth.uid;
+    }
+
+    // Financial Ledger (Income & Expense) Collection
+    match /transactions/{transactionId} {
+      allow get: if isSignedIn() && isValidId(transactionId) && existing().ownerId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+
+      allow create: if isVerifiedUser() &&
+        isValidId(transactionId) &&
+        isValidTransaction(incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time &&
+        hasFarmProfile(request.auth.uid);
+
+      allow update: if (
+        isVerifiedUser() &&
+        isValidId(transactionId) &&
+        isValidTransaction(incoming()) &&
+        existing().ownerId == request.auth.uid &&
+        incoming().ownerId == existing().ownerId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        (
+          isAdmin() ||
+          // Action: Quick Amount & Payment Method Settlement
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'amount', 'paymentMethod', 'notes', 'updatedAt'
+          ]) ||
+          // Action: Full Transaction Ledger Edit
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'type', 'title', 'category', 'amount',
+            'transactionDate', 'paymentMethod', 'notes', 'updatedAt'
+          ])
+        )
+      );
+
+      allow delete: if isVerifiedUser() && isValidId(transactionId) && existing().ownerId == request.auth.uid;
+    }
+
+    // Sales Records Collection
+    match /sales/{saleId} {
+      allow get: if isSignedIn() && isValidId(saleId) && existing().ownerId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+
+      allow create: if isVerifiedUser() &&
+        isValidId(saleId) &&
+        isValidSaleRecord(incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time &&
+        hasFarmProfile(request.auth.uid);
+
+      allow update: if (
+        isVerifiedUser() &&
+        isValidId(saleId) &&
+        isValidSaleRecord(incoming()) &&
+        existing().ownerId == request.auth.uid &&
+        incoming().ownerId == existing().ownerId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        (
+          isAdmin() ||
+          // Action: Due Payment Collection Update
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'paidAmount', 'dueAmount', 'notes', 'updatedAt'
+          ]) ||
+          // Action: Full Sale Record Edit
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'productType', 'itemName', 'referenceTag', 'quantity', 'unit',
+            'unitPrice', 'totalAmount', 'paidAmount', 'dueAmount',
+            'buyerName', 'buyerPhone', 'saleDate', 'notes', 'updatedAt'
+          ])
+        )
+      );
+
+      allow delete: if isVerifiedUser() && isValidId(saleId) && existing().ownerId == request.auth.uid;
+    }
+  }
+}

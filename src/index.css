@@ -1,0 +1,48 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: "Hind Siliguri", "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Hind Siliguri", "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    background-color: #090D0B;
+    color: #EFF5F1;
+    color-scheme: dark;
+  }
+
+  body {
+    margin: 0;
+    background-color: #090D0B;
+    color: #EFF5F1;
+    letter-spacing: 0.01em;
+  }
+
+  /* Tabular numerals discipline across tables, inputs, and financial metrics */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Subtle dark scrollbar matching obsidian & forest palette */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #090D0B;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1E2E26;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #2C4438;
+}
