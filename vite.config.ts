@@ -1,11 +1,29 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
+import fs from 'fs';
 import path from 'path';
-import {defineConfig} from 'vite';
+import {defineConfig, Plugin} from 'vite';
 
-export default defineConfig(() => {
+function githubPagesSpaPlugin(): Plugin {
   return {
-    plugins: [react(), tailwindcss()],
+    name: 'github-pages-spa-plugin',
+    closeBundle() {
+      const distDir = path.resolve(__dirname, 'dist');
+      const indexHtml = path.join(distDir, 'index.html');
+      const notFoundHtml = path.join(distDir, '404.html');
+      const noJekyll = path.join(distDir, '.nojekyll');
+      if (fs.existsSync(indexHtml)) {
+        fs.copyFileSync(indexHtml, notFoundHtml);
+        fs.writeFileSync(noJekyll, '');
+      }
+    },
+  };
+}
+
+export default defineConfig(({command}) => {
+  return {
+    base: command === 'build' ? './' : '/',
+    plugins: [react(), tailwindcss(), githubPagesSpaPlugin()],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),

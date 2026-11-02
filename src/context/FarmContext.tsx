@@ -269,16 +269,31 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [demoStore]);
 
-  // Firebase Auth listener
+  // Firebase Auth listener with error & timeout safety for static hosts (e.g., GitHub Pages)
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      setUser(firebaseUser);
-      if (firebaseUser) {
-        setIsDemoMode(false);
-      }
+    const safetyTimer = window.setTimeout(() => {
       setIsAuthReady(true);
-    });
-    return () => unsubscribe();
+    }, 2500);
+
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      (firebaseUser) => {
+        window.clearTimeout(safetyTimer);
+        setUser(firebaseUser);
+        if (firebaseUser) {
+          setIsDemoMode(false);
+        }
+        setIsAuthReady(true);
+      },
+      () => {
+        window.clearTimeout(safetyTimer);
+        setIsAuthReady(true);
+      }
+    );
+    return () => {
+      window.clearTimeout(safetyTimer);
+      unsubscribe();
+    };
   }, []);
 
   // Cloud Firestore synchronization once user is authenticated and verified
@@ -558,7 +573,15 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await signInWithPopup(auth, googleProvider);
       showToast('ক্লাউড অ্যাকাউন্টে সফলভাবে সংযুক্ত হয়েছেন।');
       return { ok: true };
-    } catch (err) {
+    } catch (err: unknown) {
+      const code = (err as { code?: string })?.code || '';
+      if (code === 'auth/unauthorized-domain') {
+        const host = typeof window !== 'undefined' ? window.location.hostname : 'github.io';
+        return {
+          ok: false,
+          error: `ক্লাউড লগইনের জন্য Firebase Console → Authentication → Settings → Authorized domains-এ "${host}" ডোমেইনটি যুক্ত করুন।`,
+        };
+      }
       const msg = err instanceof Error ? err.message : 'লগইন সম্পন্ন হয়নি।';
       return { ok: false, error: msg };
     }
@@ -572,6 +595,14 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { ok: true };
       } catch (err: unknown) {
         const code = (err as { code?: string })?.code || '';
+        if (code === 'auth/unauthorized-domain') {
+          const host = typeof window !== 'undefined' ? window.location.hostname : 'github.io';
+          return {
+            ok: false,
+            code,
+            error: `Firebase Console → Authentication → Settings → Authorized domains-এ "${host}" ডোমেইনটি যুক্ত করুন।`,
+          };
+        }
         if (code === 'auth/operation-not-allowed') {
           return {
             ok: false,
@@ -601,6 +632,14 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { ok: true };
       } catch (err: unknown) {
         const code = (err as { code?: string })?.code || '';
+        if (code === 'auth/unauthorized-domain') {
+          const host = typeof window !== 'undefined' ? window.location.hostname : 'github.io';
+          return {
+            ok: false,
+            code,
+            error: `Firebase Console → Authentication → Settings → Authorized domains-এ "${host}" ডোমেইনটি যুক্ত করুন।`,
+          };
+        }
         if (code === 'auth/operation-not-allowed') {
           return {
             ok: false,

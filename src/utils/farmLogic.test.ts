@@ -13,6 +13,7 @@ import {
   hashPasswordSha256,
   isDefaultAdminPasswordProfile,
   isValidDocumentId,
+  sha256PureJsHex,
   validateAnimalInput,
   validateFeedStockInput,
   validateSaleRecordInput,
@@ -161,6 +162,15 @@ test('salted SHA-256 farm password hashing verifies correct password and rejects
 
   const wrong = await verifyPasswordSha256('WrongPass123', salt, hash);
   assert.equal(wrong, false);
+});
+
+test('pure-JS SHA-256 fallback matches Web Crypto SHA-256 and DEFAULT_ADMIN_HASH identically', async () => {
+  const pureDefault = sha256PureJsHex(`${DEFAULT_ADMIN_SALT}:${DEFAULT_ADMIN_PASSWORD}`);
+  assert.equal(pureDefault, DEFAULT_ADMIN_HASH);
+
+  const unicodeInput = '736f62756a:সবুজখামার#২০২৬';
+  const webCryptoDigest = await hashPasswordSha256('সবুজখামার#২০২৬', '736f62756a');
+  assert.equal(sha256PureJsHex(unicodeInput), webCryptoDigest);
 });
 
 test('default Admin Password (admin1234) is mandatory on new profile and custom password replaces it', async () => {
