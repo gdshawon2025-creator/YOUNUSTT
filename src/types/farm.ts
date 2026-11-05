@@ -13,7 +13,24 @@ export enum ActiveTab {
   FEED_STOCK = 'feed_stock',
   TRANSACTIONS = 'transactions',
   SALES = 'sales',
+  AI_ADVISOR = 'ai_advisor',
   ADMIN_PANEL = 'admin_panel',
+}
+
+export interface AiChatMessage {
+  id: string;
+  sender: 'user' | 'agent';
+  text: string;
+  timestamp: string;
+  suggestedActions?: string[];
+}
+
+export interface FarmAiGuidance {
+  headline: string;
+  healthAssessment: string;
+  feedAssessment: string;
+  financeAssessment: string;
+  topRecommendations: string[];
 }
 
 export type BulkCollectionKey = 'animals' | 'feedStocks' | 'transactions' | 'sales';

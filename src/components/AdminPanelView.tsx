@@ -426,10 +426,10 @@ export const AdminPanelView: React.FC<AdminPanelViewProps> = ({ onNavigate }) =>
           <button
             type="button"
             onClick={lockWorkspace}
-            className="min-h-[42px] px-4 py-2 text-xs font-semibold text-emerald-300 hover:text-white bg-[#13241B] hover:bg-emerald-600 border border-emerald-500/30 rounded-xl transition-colors inline-flex items-center gap-2 whitespace-nowrap shrink-0"
+            className="min-h-[38px] px-3.5 py-1.5 text-xs font-semibold text-emerald-300 hover:text-white bg-[#111F18] hover:bg-[#192E23] border border-[#20362A] rounded-xl transition-colors inline-flex items-center gap-2 whitespace-nowrap shrink-0 cursor-pointer"
           >
-            <Lock className="w-4 h-4 shrink-0" />
-            <span>এখনই খামার ও প্যানেল লক করুন</span>
+            <Lock className="w-4 h-4 shrink-0 text-emerald-400" />
+            <span>এখনই সেশন লক করুন</span>
           </button>
         </div>
       </div>
@@ -438,17 +438,17 @@ export const AdminPanelView: React.FC<AdminPanelViewProps> = ({ onNavigate }) =>
       <div
         role="tablist"
         aria-label="অ্যাডমিন প্যানেল বিভাগসমূহ"
-        className="flex flex-wrap sm:inline-flex items-center gap-1 p-1 bg-[#0D1410] border border-[#1C2C23] rounded-xl"
+        className="flex flex-wrap sm:inline-flex items-center gap-1 p-1 bg-[#0B110E] border border-[#18261E] rounded-xl"
       >
         <button
           type="button"
           role="tab"
           aria-selected={sectionTab === 'control'}
           onClick={() => setSectionTab('control')}
-          className={`min-h-[40px] px-4 py-2 text-xs font-semibold rounded-lg transition-colors inline-flex items-center gap-2 whitespace-nowrap shrink-0 ${
+          className={`min-h-[38px] px-4 py-2 text-xs font-medium rounded-lg transition-all inline-flex items-center gap-2 whitespace-nowrap shrink-0 cursor-pointer ${
             sectionTab === 'control'
-              ? 'bg-emerald-600 text-white'
-              : 'text-[#9CB0A4] hover:text-[#EFF5F1]'
+              ? 'bg-[#15251D] text-emerald-300 font-semibold border border-emerald-500/30 shadow-sm'
+              : 'text-[#8EA496] hover:text-[#EFF5F1] hover:bg-[#101814]'
           }`}
         >
           <SlidersHorizontal className="w-3.5 h-3.5 shrink-0" />
@@ -460,10 +460,10 @@ export const AdminPanelView: React.FC<AdminPanelViewProps> = ({ onNavigate }) =>
           role="tab"
           aria-selected={sectionTab === 'security'}
           onClick={() => setSectionTab('security')}
-          className={`min-h-[40px] px-4 py-2 text-xs font-semibold rounded-lg transition-colors inline-flex items-center gap-2 whitespace-nowrap shrink-0 ${
+          className={`min-h-[38px] px-4 py-2 text-xs font-medium rounded-lg transition-all inline-flex items-center gap-2 whitespace-nowrap shrink-0 cursor-pointer ${
             sectionTab === 'security'
-              ? 'bg-emerald-600 text-white'
-              : 'text-[#9CB0A4] hover:text-[#EFF5F1]'
+              ? 'bg-[#15251D] text-emerald-300 font-semibold border border-emerald-500/30 shadow-sm'
+              : 'text-[#8EA496] hover:text-[#EFF5F1] hover:bg-[#101814]'
           }`}
         >
           <KeyRound className="w-3.5 h-3.5 shrink-0" />
@@ -475,10 +475,10 @@ export const AdminPanelView: React.FC<AdminPanelViewProps> = ({ onNavigate }) =>
           role="tab"
           aria-selected={sectionTab === 'settings'}
           onClick={() => setSectionTab('settings')}
-          className={`min-h-[40px] px-4 py-2 text-xs font-semibold rounded-lg transition-colors inline-flex items-center gap-2 whitespace-nowrap shrink-0 ${
+          className={`min-h-[38px] px-4 py-2 text-xs font-medium rounded-lg transition-all inline-flex items-center gap-2 whitespace-nowrap shrink-0 cursor-pointer ${
             sectionTab === 'settings'
-              ? 'bg-emerald-600 text-white'
-              : 'text-[#9CB0A4] hover:text-[#EFF5F1]'
+              ? 'bg-[#15251D] text-emerald-300 font-semibold border border-emerald-500/30 shadow-sm'
+              : 'text-[#8EA496] hover:text-[#EFF5F1] hover:bg-[#101814]'
           }`}
         >
           <Cloud className="w-3.5 h-3.5 shrink-0" />
